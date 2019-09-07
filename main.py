@@ -10,9 +10,10 @@ import math
 running = True
 gameOver = True
 score = 0
+autoFire = False
 alien_cols = 7
 alien_rows = 5
-shipSpeed = 0.3
+shipSpeed = 10 
 alienSpeed = 32
 minX = 0
 maxX = 740
@@ -34,10 +35,11 @@ playerX_change = 0
 bulletImg = Images.GetShipBulletImage()
 bulletX = 0
 bulletY = 0
-bulletY_change = -1
+bulletY_change = -10
 bulletReady = True
 bulletTimer = time.time()
 fireRate = 3.0
+collisionDistance = 42
 print("player init")
 
 aliens = []
@@ -66,8 +68,11 @@ def init_aliens():
   
   
 font = pygame.font.Font("freesansbold.ttf", 32)
+titleFont = pygame.font.Font("freesansbold.ttf", 64)
 scoreTextX = 10
 scoreTextY = 10
+titleTextX = 120
+titleTextY = 200
 gameOverTextX = 300
 gameOverTextY = 400
 winlose = ""
@@ -92,14 +97,19 @@ def bulletHit(alien):
   if bulletReady == True:
     return False
   distance = math.sqrt(abs(math.pow(alien["x"] - bulletX, 2) + math.pow(alien["y"] - bulletY, 2)))
-  if distance < 27:
+  if distance < collisionDistance:
     return True
   #end bulletHit
+
+
+
 
 def update_text():
   scoreText = font.render("SCORE: " + str(score), True, (255, 255, 255))
   screen.blit(scoreText, (scoreTextX, scoreTextY))
   if gameOver:
+    titleText = titleFont.render("SPACE INVADERS", True, (255, 255, 255))
+    screen.blit(titleText, (titleTextX, titleTextY))
     gameOverText = font.render("GAME OVER", True, (255, 255, 255))
     screen.blit(gameOverText, (gameOverTextX, gameOverTextY))
     winloseText = font.render(winlose, True, (255, 255, 255))
@@ -181,6 +191,10 @@ while running:
           
       elif event.key == pygame.K_d:
         playerX_change = shipSpeed
+
+      elif event.key == pygame.K_SPACE or event.key == pygame.K_LCTRL:
+        if bulletReady:
+          fire_bullet()
         
     elif event.type == pygame.KEYUP:
       if event.key == pygame.K_a or event.key == pygame.K_d:
@@ -226,10 +240,11 @@ while running:
       if bulletY < -10:
         bulletReady = True
 
-    # bullet auto-fire
-    if time.time() - bulletTimer >= fireRate:
-      if bulletReady:
-        fire_bullet()
+    if autoFire:
+      # bullet auto-fire
+      if time.time() - bulletTimer >= fireRate:
+        if bulletReady:
+          fire_bullet()
     
   # render
   screen.fill((0, 0, 0))
